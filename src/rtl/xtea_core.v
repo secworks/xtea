@@ -55,8 +55,9 @@ module xtea_core(
   // Internal constant and parameter definitions.
   //----------------------------------------------------------------
   localparam CTRL_IDLE    = 2'h0;
-  localparam CTRL_ROUNDS0 = 2'h1;
-  localparam CTRL_ROUNDS1 = 2'h2;
+  localparam CTRL_INIT    = 2'h1;
+  localparam CTRL_ROUNDS0 = 2'h2;
+  localparam CTRL_ROUNDS1 = 2'h3;
 
   localparam DELTA        = 32'h9e3779b9;
   localparam NUM_ROUNDS   = 32;
@@ -267,11 +268,17 @@ module xtea_core(
               begin
                 ready_new     = 1'h0;
                 ready_we      = 1'h1;
-                round_ctr_rst = 1'h0;
-                init_state    = 1'h1;
-                core_ctrl_new = CTRL_ROUNDS0;
-                core_ctrl_we  = 1'b1;
+                core_ctrl_new = CTRL_INIT;
+                core_ctrl_we  = 1'h1;
               end
+          end
+
+        CTRL_INIT:
+          begin
+            round_ctr_rst = 1'h1;
+            init_state    = 1'h1;
+            core_ctrl_new = CTRL_ROUNDS0;
+            core_ctrl_we  = 1'h1;
           end
 
         CTRL_ROUNDS0:

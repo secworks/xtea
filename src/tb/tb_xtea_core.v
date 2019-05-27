@@ -57,6 +57,7 @@ module tb_xtea_core();
   reg [31 : 0] cycle_ctr;
   reg [31 : 0] error_ctr;
   reg [31 : 0] tc_ctr;
+  reg          tb_monitor;
 
   reg           tb_clk;
   reg           tb_reset_n;
@@ -108,7 +109,7 @@ module tb_xtea_core();
     begin : sys_monitor
       cycle_ctr = cycle_ctr + 1;
       #(CLK_PERIOD);
-      if (DEBUG)
+      if (tb_monitor)
         begin
           dump_dut_state();
         end
@@ -127,15 +128,20 @@ module tb_xtea_core();
       $display("Inputs and outputs:");
       $display("encdec = 0x%01x, next = 0x%01x",
                dut.encdec, dut.next);
-      $display("key  = 0x%032x ", dut.key);
-      $display("block  = 0x%032x", dut.block);
+      $display("key   = 0x%016x ", dut.key);
+      $display("block = 0x%08x", dut.block);
       $display("");
-      $display("ready        = 0x%01x", dut.ready);
-      $display("result = 0x%032x", dut.result);
+      $display("ready  = 0x%01x", dut.ready);
+      $display("result = 0x%08x", dut.result);
       $display("");
-      $display("Encipher state::");
-      $display("enc_ctrl = 0x%01x, round_ctr = 0x%01x",
-               dut.core_ctrl_reg, dut.round_ctr_reg);
+      $display("core_ctrl_reg = 0x%01x, core_ctrl_new = 0x%01x, round_ctr = 0x%02x",
+               dut.core_ctrl_reg, dut.core_ctrl_new, dut.round_ctr_reg);
+      $display("init_state = 0x%01x, update_v0 = 0x%01x, update_sum = 0x%01x, update_v1 = 0x%01x",
+               dut.init_state, dut.update_v0, dut.update_sum, dut.update_v1);
+      $display("v0_reg = 0x%08x, v0_new = 0x%08x v0_we = 0x%01x",
+               dut.v0_reg, dut.v0_new, dut.v0_we);
+      $display("v1_reg = 0x%08x, v1_new = 0x%08x v1_we = 0x%01x",
+               dut.v1_reg, dut.v1_new, dut.v1_we);
       $display("");
     end
   endtask // dump_dut_state
@@ -177,42 +183,6 @@ module tb_xtea_core();
 
 
   //----------------------------------------------------------------
-  // init_sim()
-  //
-  // Initialize all counters and testbed functionality as well
-  // as setting the DUT inputs to defined values.
-  //----------------------------------------------------------------
-  task init_sim;
-    begin
-      cycle_ctr = 0;
-      error_ctr = 0;
-      tc_ctr    = 0;
-
-      tb_clk     = 0;
-      tb_reset_n = 1;
-      tb_encdec  = 0;
-      tb_next    = 0;
-      tb_key     = 128'h0;
-      tb_block  = 64'h0;
-    end
-  endtask // init_sim
-
-  //----------------------------------------------------------------
-  // tc1()
-  //----------------------------------------------------------------
-  task tc1;
-    begin
-      tb_key = 128'h000102030405060708090a0b0c0d0e0f;
-      tb_block = 64'h4142434445464748;
-      tb_encdec = 1'h1;
-      tb_next = 1'h1;
-      #(2 * CLK_PERIOD);
-      wait_ready();
-      dump_dut_state();
-    end
-
-
-  //----------------------------------------------------------------
   // wait_ready()
   //
   // Wait for the ready flag in the dut to be set.
@@ -233,6 +203,50 @@ module tb_xtea_core();
         end
     end
   endtask // wait_ready
+
+
+  //----------------------------------------------------------------
+  // init_sim()
+  //
+  // Initialize all counters and testbed functionality as well
+  // as setting the DUT inputs to defined values.
+  //----------------------------------------------------------------
+  task init_sim;
+    begin
+      cycle_ctr  = 0;
+      error_ctr  = 0;
+      tc_ctr     = 0;
+      tb_monitor = 0;
+
+      tb_clk     = 0;
+      tb_reset_n = 1;
+      tb_encdec  = 0;
+      tb_next    = 0;
+      tb_key     = 128'h0;
+      tb_block   = 64'h0;
+    end
+  endtask // init_sim
+
+
+  //----------------------------------------------------------------
+  // tc1()
+  //----------------------------------------------------------------
+  task tc1;
+    begin
+      $display("*** TC1 started.");
+      tb_monitor = 1;
+      tb_key = 128'h000102030405060708090a0b0c0d0e0f;
+      tb_block = 64'h4142434445464748;
+      tb_encdec = 1'h1;
+      tb_next = 1'h1;
+      #(2 * CLK_PERIOD);
+      tb_next = 1'h0;
+      wait_ready();
+      dump_dut_state();
+      tb_monitor = 0;
+      $display("*** TC1 completed.");
+    end
+  endtask // tc1
 
 
   //----------------------------------------------------------------
