@@ -197,6 +197,20 @@ module tb_xtea_core();
     end
   endtask // init_sim
 
+  //----------------------------------------------------------------
+  // tc1()
+  //----------------------------------------------------------------
+  task tc1;
+    begin
+      tb_key = 128'h000102030405060708090a0b0c0d0e0f;
+      tb_block = 64'h4142434445464748;
+      tb_encdec = 1'h1;
+      tb_next = 1'h1;
+      #(2 * CLK_PERIOD);
+      wait_ready();
+      dump_dut_state();
+    end
+
 
   //----------------------------------------------------------------
   // wait_ready()
@@ -237,6 +251,7 @@ module tb_xtea_core();
       reset_dut();
       dump_dut_state();
 
+      tc1();
 
       display_test_result();
       $display("");

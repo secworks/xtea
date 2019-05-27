@@ -49,10 +49,7 @@ LINT = verilator
 LINT_FLAGS = +1364-2001ext+ --lint-only  -Wall -Wno-fatal -Wno-DECLFILENAME
 
 
-all: top.sim core.sim
-
-top.sim: $(TB_TOP_SRC) $(TOP_SRC)
-	$(CC) $(CC_FLAGS) -o top.sim $(TB_TOP_SRC) $(TOP_SRC)
+all: core.sim
 
 
 core.sim: $(TB_CORE_SRC) $(CORE_SRC)
@@ -61,10 +58,6 @@ core.sim: $(TB_CORE_SRC) $(CORE_SRC)
 
 sim-core: core.sim
 	./core.sim
-
-
-sim-top: top.sim
-	./top.sim
 
 
 lint:  $(TOP_SRC)
