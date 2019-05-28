@@ -47,18 +47,39 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define DEBUG 1
+
+
 //------------------------------------------------------------------
 // enc()
 //------------------------------------------------------------------
 void enc(unsigned int num_rounds, uint32_t v[2], uint32_t const key[4]) {
-    unsigned int i;
-    uint32_t v0=v[0], v1=v[1], sum=0, delta=0x9E3779B9;
-    for (i=0; i < num_rounds; i++) {
-        v0 += (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
-        sum += delta;
-        v1 += (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum>>11) & 3]);
-    }
-    v[0]=v0; v[1]=v1;
+  printf("Starting encipher\n");
+  unsigned int i;
+  uint32_t v0=v[0], v1=v[1], sum=0, delta=0x9E3779B9;
+  uint32_t v0_delta, v1_delta;
+
+  printf("v0 = 0x%04x, v1 = 0x%04x, sum = 0x%04x\n", v0, v1, sum);
+
+  for (i=0; i < num_rounds; i++) {
+    printf("round: %02d\n", i);
+    v0_delta = (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
+    v0 += v0_delta;
+    if (DEBUG)
+      printf("v0_delta = 0x%04x, v0 = 0x%04x\n", v0_delta, v0);
+
+    sum += delta;
+    if (DEBUG)
+      printf("sum = 0x%04x\n", sum);
+
+    v1_delta = (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum>>11) & 3]);
+    v1 += v1_delta;
+    if (DEBUG)
+      printf("v1_delta = 0x%04x, v1 = 0x%04x\n", v1_delta, v1);
+  }
+
+  v[0]=v0; v[1]=v1;
+  printf("\n");
 }
 
 
@@ -66,14 +87,32 @@ void enc(unsigned int num_rounds, uint32_t v[2], uint32_t const key[4]) {
 // dec()
 //------------------------------------------------------------------
 void dec(unsigned int num_rounds, uint32_t v[2], uint32_t const key[4]) {
-    unsigned int i;
-    uint32_t v0=v[0], v1=v[1], delta=0x9E3779B9, sum=delta*num_rounds;
-    for (i=0; i < num_rounds; i++) {
-        v1 -= (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum>>11) & 3]);
-        sum -= delta;
-        v0 -= (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
-    }
-    v[0]=v0; v[1]=v1;
+  printf("Starting decipher.\n");
+  unsigned int i;
+  uint32_t v0=v[0], v1=v[1], delta=0x9E3779B9, sum=delta*num_rounds;
+  uint32_t v0_delta, v1_delta;
+
+  printf("v0 = 0x%04x, v1 = 0x%04x, sum = 0x%04x\n", v0, v1, sum);
+
+  for (i=0; i < num_rounds; i++) {
+    printf("round: %02d\n", i);
+    v1_delta = (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum>>11) & 3]);
+    v1 -= v1_delta;
+    if (DEBUG)
+      printf("v1_delta = 0x%04x, v1 = 0x%04x\n", v1_delta, v1);
+
+    sum -= delta;
+    if (DEBUG)
+      printf("sum = 0x%04x\n", sum);
+
+    v0_delta = (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
+    v0 -= v0_delta;
+    if (DEBUG)
+      printf("v0_delta = 0x%04x, v0 = 0x%04x\n", v0_delta, v0);
+  }
+
+  v[0]=v0; v[1]=v1;
+  printf("\n");
 }
 
 
@@ -85,14 +124,14 @@ int main(void) {
   uint32_t my_block[2] = {0x41424344, 0x45464748};
 
   printf("Block before encipher: 0x%04x 0x%04x\n", my_block[0], my_block[1]);
-
+  printf("\n");
   enc(32, &my_block[0], &my_key[0]);
-
   printf("Block after encipher:  0x%04x 0x%04x\n", my_block[0], my_block[1]);
+  printf("\n");
 
   dec(32, &my_block[0], &my_key[0]);
-
   printf("Block after decipher:  0x%04x 0x%04x\n", my_block[0], my_block[1]);
+  printf("\n");
 
   return 0;
 }
