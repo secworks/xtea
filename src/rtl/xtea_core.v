@@ -188,7 +188,7 @@ module xtea_core(
         end
 
       v0_delta = ((({v1_reg[27 : 0], 4'h0}) ^ ({5'h0, v1_reg[31 : 5]}) + v1_reg) ^
-                  (sum_reg + keyw[sum_reg[2 : 0]]));
+                  (sum_reg + keyw[sum_reg[1 : 0]]));
 
       if (update_v0)
         begin
@@ -200,7 +200,7 @@ module xtea_core(
         end
 
       v1_delta = ((({v0_reg[27 : 0], 4'h0}) ^ ({5'h0, v0_reg[31 : 6]}) + v0_reg) ^
-                  (sum_reg + keyw[sum_reg[13 : 11]]));
+                  (sum_reg + keyw[sum_reg[12 : 11]]));
 
       if (update_v1)
         begin
