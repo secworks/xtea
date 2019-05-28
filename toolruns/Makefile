@@ -60,8 +60,8 @@ sim-core: core.sim
 	./core.sim
 
 
-lint:  $(TOP_SRC)
-	$(LINT) $(LINT_FLAGS) $(TOP_SRC)
+lint:  $(CORE_SRC)
+	$(LINT) $(LINT_FLAGS) $(CORE_SRC)
 
 
 clean:
