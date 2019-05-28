@@ -74,8 +74,8 @@ module xtea_core(
   reg [31 : 0] v1_new;
   reg          v1_we;
 
-  reg [63 : 0] sum_reg;
-  reg [63 : 0] sum_new;
+  reg [31 : 0] sum_reg;
+  reg [31 : 0] sum_new;
   reg          sum_we;
 
   reg          ready_reg;
@@ -123,7 +123,7 @@ module xtea_core(
           ready_reg     <= 1'h1;
           v0_reg        <= 32'h0;
           v1_reg        <= 32'h0;
-          sum_reg       <= 64'h0;
+          sum_reg       <= 32'h0;
           round_ctr_reg <= 6'h0;
           core_ctrl_reg <= CTRL_IDLE;
         end
@@ -165,7 +165,7 @@ module xtea_core(
       v0_we   = 1'h0;
       v1_new  = 32'h0;
       v1_we   = 1'h0;
-      sum_new = 64'h0;
+      sum_new = 32'h0;
       sum_we  = 1'h0;
 
       keyw[0] = key[031 : 000];
@@ -182,7 +182,7 @@ module xtea_core(
           sum_we  = 1'h1;
 
           if (encdec)
-            sum_new = 64'h0;
+            sum_new = 32'h0;
           else
             sum_new = DELTA * NUM_ROUNDS;
         end
