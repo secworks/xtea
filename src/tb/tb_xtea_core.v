@@ -141,8 +141,9 @@ module tb_xtea_core();
       $display("keyw[0] = 0x%08x, keyw[1] = 0x%08x, keyw[2] = 0x%08x, keyw[3] = 0x%08x",
                dut.xtea_core_dp.keyw[0], dut.xtea_core_dp.keyw[1],
                dut.xtea_core_dp.keyw[2], dut.xtea_core_dp.keyw[3]);
-      $display("v0_reg  = 0x%08x, v0_new  = 0x%08x, v0_delta = 0x%08x, v0_we = 0x%01x",
-               dut.v0_reg, dut.v0_new, dut.xtea_core_dp.v0_delta, dut.v0_we);
+      $display("v0_reg  = 0x%08x, v0_new  = 0x%08x, v0_0 = 0x%08x, v0_1 = 0x%08x, v0_delta = 0x%08x, v0_we = 0x%01x",
+               dut.v0_reg, dut.v0_new, dut.xtea_core_dp.v0_0, dut.xtea_core_dp.v0_1,
+               dut.xtea_core_dp.v0_delta, dut.v0_we);
       $display("v1_reg  = 0x%08x, v1_new  = 0x%08x, v1_delta = 0x%08x, v1_we = 0x%01x",
                dut.v1_reg, dut.v1_new,dut.xtea_core_dp.v1_delta, dut.v1_we);
       $display("sum_reg = 0x%08x, sum_new = 0x%08x, sum_we = 0x%01x",

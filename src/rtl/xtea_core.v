@@ -158,6 +158,8 @@ module xtea_core(
   always @*
     begin : xtea_core_dp
       reg [31 : 0] keyw [0 : 3];
+      reg [31 : 0] v0_0;
+      reg [31 : 0] v0_1;
       reg [31 : 0] v0_delta;
       reg [31 : 0] v1_delta;
 
@@ -168,10 +170,10 @@ module xtea_core(
       sum_new = 32'h0;
       sum_we  = 1'h0;
 
-      keyw[0] = key[031 : 000];
-      keyw[1] = key[063 : 032];
-      keyw[2] = key[095 : 064];
-      keyw[3] = key[127 : 096];
+      keyw[0] = key[127 : 096];
+      keyw[1] = key[095 : 064];
+      keyw[2] = key[063 : 032];
+      keyw[3] = key[031 : 000];
 
       if (init_state)
         begin
@@ -187,8 +189,9 @@ module xtea_core(
             sum_new = DELTA * NUM_ROUNDS;
         end
 
-      v0_delta = ((({v1_reg[27 : 0], 4'h0}) ^ ({5'h0, v1_reg[31 : 5]}) + v1_reg) ^
-                  (sum_reg + keyw[sum_reg[1 : 0]]));
+      v0_0 = (({v1_reg[27 : 0], 4'h0} ^ {5'h0, v1_reg[31 : 5]}) + v1_reg);
+      v0_1 = (sum_reg + keyw[sum_reg[1 : 0]]);
+      v0_delta =  v0_0 ^ v0_1;
 
       if (update_v0)
         begin
@@ -199,8 +202,8 @@ module xtea_core(
             v0_new = v0_reg - v0_delta;;
         end
 
-      v1_delta = ((({v0_reg[27 : 0], 4'h0}) ^ ({5'h0, v0_reg[31 : 6]}) + v0_reg) ^
-                  (sum_reg + keyw[sum_reg[12 : 11]]));
+      v1_delta = (({v0_reg[27 : 0], 4'h0} ^ {5'h0, v0_reg[31 : 6]}) + v0_reg) ^
+                  (sum_reg + keyw[sum_reg[12 : 11]]);
 
       if (update_v1)
         begin
