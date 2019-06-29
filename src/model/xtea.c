@@ -59,10 +59,13 @@ void enc(unsigned int num_rounds, uint32_t v[2], uint32_t const key[4]) {
   uint32_t v0=v[0], v1=v[1], sum=0, delta=0x9E3779B9;
   uint32_t v0_delta, v1_delta;
   uint32_t v0_0, v0_1;
+  uint32_t v1_0, v1_1;
 
-  printf("key[0] = 0x%04x, key[0] = 0x%04x, key[0] = 0x%04x, key[0] = 0x%04x \n",
+  printf("State at init:\n");
+  printf("key[0] = 0x%08x, key[0] = 0x%08x, key[0] = 0x%08x, key[0] = 0x%08x\n",
          key[0], key[1], key[2], key[3]);
-  printf("v0 = 0x%04x, v1 = 0x%04x, sum = 0x%04x\n", v0, v1, sum);
+  printf("v0 = 0x%08x, v1 = 0x%08x, sum = 0x%08x\n", v0, v1, sum);
+  printf("\n");
 
   for (i=0; i < num_rounds; i++) {
     printf("round: %02d\n", i);
@@ -72,19 +75,22 @@ void enc(unsigned int num_rounds, uint32_t v[2], uint32_t const key[4]) {
     v0 += v0_delta;
 
     if (DEBUG)
-      printf("v0_0 = 0x%04x, v0_1 = 0x%04x, v0_delta = 0x%04x, v0 = 0x%04x\n",
+      printf("v0_0 = 0x%08x, v0_1 = 0x%08x, v0_delta = 0x%08x, v0 = 0x%08x\n",
              v0_0, v0_1, v0_delta, v0);
 
     sum += delta;
 
     if (DEBUG)
-      printf("sum = 0x%04x\n", sum);
+      printf("sum = 0x%08x\n", sum);
 
-    v1_delta = (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum>>11) & 3]);
+    v1_0 = (((v0 << 4) ^ (v0 >> 5)) + v0);
+    v1_1 = (sum + key[(sum>>11) & 3]);
+    v1_delta = v1_0 ^ v1_1;
     v1 += v1_delta;
 
     if (DEBUG)
-      printf("v1_delta = 0x%04x, v1 = 0x%04x\n", v1_delta, v1);
+      printf("v1_0 = 0x%08x, v1_1 = 0x%08x, v1_delta = 0x%08x, v1 = 0x%08x\n",
+             v1_0, v1_1, v1_delta, v1);
 
     printf("\n");
   }
@@ -140,6 +146,9 @@ void dec(unsigned int num_rounds, uint32_t v[2], uint32_t const key[4]) {
 int main(void) {
   const uint32_t my_key [4] = {0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f};
   uint32_t my_block[2] = {0x41424344, 0x45464748};
+
+  printf("Reference model for XTEA block cipher\n");
+  printf("-------------------------------------\n");
 
   printf("Block before encipher: 0x%04x 0x%04x\n", my_block[0], my_block[1]);
   printf("\n");
