@@ -2,7 +2,11 @@
 Verilog implementation of the xtea block cipher.
 
 ## Status
-Not done. Does NOT work.
+Not done.
+Core is functionally correct.
+
+Top level wrapper missing.
+Not yet implemented in FPGAs.
 
 
 ## Introduction
