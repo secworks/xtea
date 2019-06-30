@@ -59,6 +59,7 @@ void enc(unsigned int num_rounds, uint32_t v[2], uint32_t const key[4]) {
   uint32_t v0=v[0], v1=v[1], sum=0, delta=0x9E3779B9;
   uint32_t v0_delta, v1_delta;
   uint32_t v0_0, v0_1;
+  uint32_t v0_0_0, v0_0_1;
   uint32_t v1_0, v1_1;
 
   printf("State at init:\n");
@@ -69,14 +70,17 @@ void enc(unsigned int num_rounds, uint32_t v[2], uint32_t const key[4]) {
 
   for (i=0; i < num_rounds; i++) {
     printf("round: %02d\n", i);
-    v0_0 = (((v1 << 4) ^ (v1 >> 5)) + v1);
+
+    v0_0_0 = (v1 << 4);
+    v0_0_1 = (v1 >> 5);
+    v0_0 = ((v0_0_0 ^ v0_0_1) + v1);
     v0_1 = (sum + key[sum & 3]);
     v0_delta = v0_0 ^ v0_1;
     v0 += v0_delta;
 
     if (DEBUG)
-      printf("v0_0 = 0x%08x, v0_1 = 0x%08x, v0_delta = 0x%08x, v0 = 0x%08x\n",
-             v0_0, v0_1, v0_delta, v0);
+      printf("v0_0_0 = 0x%08x, v0_0_1 = 0x%08x, v0_0 = 0x%08x, v0_1 = 0x%08x, v0_delta = 0x%08x, v0 = 0x%08x\n",
+             v0_0_0, v0_0_1, v0_0, v0_1, v0_delta, v0);
 
     sum += delta;
 

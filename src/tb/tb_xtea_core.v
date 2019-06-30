@@ -141,8 +141,8 @@ module tb_xtea_core();
       $display("keyw[0] = 0x%08x, keyw[1] = 0x%08x, keyw[2] = 0x%08x, keyw[3] = 0x%08x",
                dut.xtea_core_dp.keyw[0], dut.xtea_core_dp.keyw[1],
                dut.xtea_core_dp.keyw[2], dut.xtea_core_dp.keyw[3]);
-      $display("v0_reg  = 0x%08x, v0_new  = 0x%08x, v0_0 = 0x%08x, v0_1 = 0x%08x, v0_delta = 0x%08x, v0_we = 0x%01x",
-               dut.v0_reg, dut.v0_new, dut.xtea_core_dp.v0_0, dut.xtea_core_dp.v0_1,
+      $display("v0_reg  = 0x%08x, v0_new  = 0x%08x, v0_0_0 = 0x%08x, v0_0_1 = 0x%08x, v0_0 = 0x%08x, v0_1 = 0x%08x, v0_delta = 0x%08x, v0_we = 0x%01x",
+               dut.v0_reg, dut.v0_new, dut.xtea_core_dp.v0_0_0, dut.xtea_core_dp.v0_0_1, dut.xtea_core_dp.v0_0, dut.xtea_core_dp.v0_1,
                dut.xtea_core_dp.v0_delta, dut.v0_we);
       $display("v1_reg  = 0x%08x, v1_new  = 0x%08x, v1_delta = 0x%08x, v1_we = 0x%01x",
                dut.v1_reg, dut.v1_new,dut.xtea_core_dp.v1_delta, dut.v1_we);
@@ -240,6 +240,7 @@ module tb_xtea_core();
   task tc1;
     begin
       $display("*** TC1 started.");
+      tc_ctr = tc_ctr + 1;
       tb_monitor = 1;
       tb_key = 128'h000102030405060708090a0b0c0d0e0f;
       tb_block = 64'h4142434445464748;
@@ -250,6 +251,14 @@ module tb_xtea_core();
       wait_ready();
       dump_dut_state();
       tb_monitor = 0;
+
+      if (tb_result == 64'h497df3d072612cb5)
+        $display("Correct result for TC1 encryption.");
+      else
+        begin
+          $display("Incorrect result for TC1 encryption. Expected 0x497df3d072612cb5, Got 0x%08x", tb_result);
+          error_ctr = error_ctr + 1;
+        end
       $display("*** TC1 completed.");
     end
   endtask // tc1
