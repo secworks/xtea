@@ -144,8 +144,9 @@ module tb_xtea_core();
       $display("v0_reg  = 0x%08x, v0_new  = 0x%08x, v0_0_0 = 0x%08x, v0_0_1 = 0x%08x, v0_0 = 0x%08x, v0_1 = 0x%08x, v0_delta = 0x%08x, v0_we = 0x%01x",
                dut.v0_reg, dut.v0_new, dut.xtea_core_dp.v0_0_0, dut.xtea_core_dp.v0_0_1, dut.xtea_core_dp.v0_0, dut.xtea_core_dp.v0_1,
                dut.xtea_core_dp.v0_delta, dut.v0_we);
-      $display("v1_reg  = 0x%08x, v1_new  = 0x%08x, v1_delta = 0x%08x, v1_we = 0x%01x",
-               dut.v1_reg, dut.v1_new,dut.xtea_core_dp.v1_delta, dut.v1_we);
+      $display("v1_reg  = 0x%08x, v1_new  = 0x%08x, v1_0_0 = 0x%08x, v1_0_1 = 0x%08x, v1_0 = 0x%08x, v1_1 = 0x%08x, v1_delta = 0x%08x, v1_we = 0x%01x",
+               dut.v1_reg, dut.v1_new, dut.xtea_core_dp.v1_0_0, dut.xtea_core_dp.v1_0_1, dut.xtea_core_dp.v1_0, dut.xtea_core_dp.v1_1,
+               dut.xtea_core_dp.v1_delta, dut.v1_we);
       $display("sum_reg = 0x%08x, sum_new = 0x%08x, sum_we = 0x%01x",
                dut.sum_reg, dut.sum_new, dut.sum_we);
       $display("");
@@ -239,9 +240,9 @@ module tb_xtea_core();
   //----------------------------------------------------------------
   task tc1;
     begin
-      $display("*** TC1 started.");
+      $display("*** TC1 - encryption started.");
       tc_ctr = tc_ctr + 1;
-      tb_monitor = 1;
+      tb_monitor = 0;
       tb_key = 128'h000102030405060708090a0b0c0d0e0f;
       tb_block = 64'h4142434445464748;
       tb_encdec = 1'h1;
@@ -249,19 +250,49 @@ module tb_xtea_core();
       #(2 * CLK_PERIOD);
       tb_next = 1'h0;
       wait_ready();
-      dump_dut_state();
       tb_monitor = 0;
 
       if (tb_result == 64'h497df3d072612cb5)
-        $display("Correct result for TC1 encryption.");
+        $display("Correct result for TC1.");
       else
         begin
-          $display("Incorrect result for TC1 encryption. Expected 0x497df3d072612cb5, Got 0x%08x", tb_result);
+          $display("Incorrect result for TC1. Expected 0x497df3d072612cb5, Got 0x%08x", tb_result);
           error_ctr = error_ctr + 1;
         end
       $display("*** TC1 completed.");
+      $display("");
     end
   endtask // tc1
+
+
+  //----------------------------------------------------------------
+  // tc2()
+  //----------------------------------------------------------------
+  task tc2;
+    begin
+      $display("*** TC2 - decryption started.");
+      tc_ctr = tc_ctr + 1;
+      tb_monitor = 0;
+      tb_key = 128'h000102030405060708090a0b0c0d0e0f;
+      tb_block = 64'h497df3d072612cb5;
+      tb_encdec = 1'h0;
+      tb_next = 1'h1;
+      #(2 * CLK_PERIOD);
+      tb_next = 1'h0;
+      wait_ready();
+      tb_monitor = 0;
+
+      if (tb_result == 64'h4142434445464748)
+        $display("Correct result for TC2.");
+      else
+        begin
+          $display("Incorrect result for TC2. Expected 0x4142434445464748, Got 0x%08x", tb_result);
+          error_ctr = error_ctr + 1;
+        end
+      $display("*** TC2 completed.");
+      $display("");
+    end
+  endtask // tc2
 
 
   //----------------------------------------------------------------
@@ -272,15 +303,14 @@ module tb_xtea_core();
   initial
     begin : xtea_core_test
       $display("   -= Testbench for xtea core started =-");
-      $display("     ================================");
+      $display("     =================================");
       $display("");
 
       init_sim();
-      dump_dut_state();
       reset_dut();
-      dump_dut_state();
 
       tc1();
+      tc2();
 
       display_test_result();
       $display("");

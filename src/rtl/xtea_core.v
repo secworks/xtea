@@ -158,11 +158,17 @@ module xtea_core(
   always @*
     begin : xtea_core_dp
       reg [31 : 0] keyw [0 : 3];
+
       reg [31 : 0] v0_0;
       reg [31 : 0] v0_0_0;
       reg [31 : 0] v0_0_1;
       reg [31 : 0] v0_1;
       reg [31 : 0] v0_delta;
+
+      reg [31 : 0] v1_0;
+      reg [31 : 0] v1_0_0;
+      reg [31 : 0] v1_0_1;
+      reg [31 : 0] v1_1;
       reg [31 : 0] v1_delta;
 
       v0_new  = 32'h0;
@@ -191,6 +197,7 @@ module xtea_core(
             sum_new = DELTA * NUM_ROUNDS;
         end
 
+
       v0_0_0 = {v1_reg[27 : 0], 4'h0};
       v0_0_1 = {5'h0, v1_reg[31 : 5]};
       v0_0 = ((v0_0_0 ^ v0_0_1) + v1_reg);
@@ -206,8 +213,12 @@ module xtea_core(
             v0_new = v0_reg - v0_delta;;
         end
 
-      v1_delta = (({v0_reg[27 : 0], 4'h0} ^ {5'h0, v0_reg[31 : 5]}) + v0_reg) ^
-                  (sum_reg + keyw[sum_reg[12 : 11]]);
+
+      v1_0_0 = {v0_reg[27 : 0], 4'h0};
+      v1_0_1 = {5'h0, v0_reg[31 : 5]};
+      v1_0 = ((v1_0_0 ^ v1_0_1) + v0_reg);
+      v1_1 = (sum_reg + keyw[sum_reg[12 : 11]]);
+      v1_delta =  v1_0 ^ v1_1;
 
       if (update_v1)
         begin
