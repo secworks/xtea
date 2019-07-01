@@ -50,6 +50,29 @@ module tb_xtea();
   parameter CLK_HALF_PERIOD = 1;
   parameter CLK_PERIOD = 2 * CLK_HALF_PERIOD;
 
+  localparam ADDR_NAME0        = 8'h00;
+  localparam ADDR_NAME1        = 8'h01;
+  localparam ADDR_VERSION      = 8'h02;
+
+  localparam ADDR_CTRL         = 8'h08;
+  localparam CTRL_NEXT_BIT     = 1;
+
+  localparam ADDR_STATUS       = 8'h09;
+  localparam STATUS_READY_BIT  = 0;
+
+  localparam ADDR_CONFIG       = 8'h0a;
+  localparam CONFIG_ENCDEC_BIT = 0;
+
+  localparam ADDR_KEY0         = 8'h10;
+  localparam ADDR_KEY1         = 8'h11;
+  localparam ADDR_KEY2         = 8'h12;
+  localparam ADDR_KEY3         = 8'h13;
+
+  localparam ADDR_BLOCK0       = 8'h20;
+  localparam ADDR_BLOCK1       = 8'h21;
+
+  localparam ADDR_RESULT0      = 8'h30;
+  localparam ADDR_RESULT1      = 8'h31;
 
   //----------------------------------------------------------------
   // Register and Wire declarations.
@@ -66,6 +89,8 @@ module tb_xtea();
   reg [7 : 0]   tb_address;
   reg [31 : 0]  tb_write_data;
   wire [31 : 0] tb_read_data;
+
+  reg [31 : 0] read_data;
 
 
   //----------------------------------------------------------------
@@ -188,15 +213,159 @@ module tb_xtea();
 
 
   //----------------------------------------------------------------
+  // write_word()
+  //
+  // Write the given word to the DUT using the DUT interface.
+  //----------------------------------------------------------------
+  task write_word(input [11 : 0] address,
+                  input [31 : 0] word);
+    begin
+      if (DEBUG)
+        begin
+          $display("*** Writing 0x%08x to 0x%02x.", word, address);
+          $display("");
+        end
+
+      tb_address = address;
+      tb_write_data = word;
+      tb_cs = 1;
+      tb_we = 1;
+      #(2 * CLK_PERIOD);
+      tb_cs = 0;
+      tb_we = 0;
+    end
+  endtask // write_word
+
+
+  //----------------------------------------------------------------
+  // read_word()
+  //
+  // Read a data word from the given address in the DUT.
+  // the word read will be available in the global variable
+  // read_data.
+  //----------------------------------------------------------------
+  task read_word(input [11 : 0]  address);
+    begin
+      tb_address = address;
+      tb_cs = 1;
+      tb_we = 0;
+      #(CLK_PERIOD);
+      read_data = tb_read_data;
+      tb_cs = 0;
+
+      if (DEBUG)
+        begin
+          $display("*** Reading 0x%08x from 0x%02x.", read_data, address);
+          $display("");
+        end
+    end
+  endtask // read_word
+
+
+  //----------------------------------------------------------------
+  // wait_ready()
+  //
+  // Wait for the ready flag to be set in dut.
+  //----------------------------------------------------------------
+  task wait_ready;
+    begin : wready
+      read_word(ADDR_STATUS);
+      while (read_data == 0)
+        read_word(ADDR_STATUS);
+    end
+  endtask // wait_ready
+
+
+  //----------------------------------------------------------------
   // tc1()
   //----------------------------------------------------------------
   task tc1;
-    begin
+    begin : tc1
+      reg [31 : 0] res0;
+      reg [31 : 0] res1;
+
+      tc_ctr = tc_ctr + 1;
+
       $display("*** TC1 - encryption started.");
+
+      write_word(ADDR_KEY0, 32'h00010203);
+      write_word(ADDR_KEY1, 32'h04050607);
+      write_word(ADDR_KEY2, 32'h08090a0b);
+      write_word(ADDR_KEY3, 32'h0c0d0e0f);
+
+      write_word(ADDR_BLOCK0, 32'h41424344);
+      write_word(ADDR_BLOCK1, 32'h45464748);
+
+      write_word(ADDR_CONFIG, 32'h1);
+      write_word(ADDR_CTRL, 32'h2);
+
+      wait_ready();
+
+      read_word(ADDR_RESULT0);
+      res0 = read_data;
+      read_word(ADDR_RESULT1);
+      res1 = read_data;
+
+      if ({res0, res1} == 64'h497df3d072612cb5)
+        begin
+          $display("*** Correct result received.");
+        end
+      else
+        begin
+          $display("*** Incorrect result received. Expexted 64'h497df3d072612cb5, got 0x%016x", {res0, res1});
+          error_ctr = error_ctr + 1;
+        end
+
       $display("*** TC1 completed.");
       $display("");
     end
   endtask // tc1
+
+
+  //----------------------------------------------------------------
+  // tc2()
+  //----------------------------------------------------------------
+  task tc2;
+    begin : tc2
+      reg [31 : 0] res0;
+      reg [31 : 0] res1;
+
+      tc_ctr = tc_ctr + 1;
+
+      $display("*** TC2 - decryption started.");
+
+      write_word(ADDR_KEY0, 32'h00010203);
+      write_word(ADDR_KEY1, 32'h04050607);
+      write_word(ADDR_KEY2, 32'h08090a0b);
+      write_word(ADDR_KEY3, 32'h0c0d0e0f);
+
+      write_word(ADDR_BLOCK0, 32'h497df3d0);
+      write_word(ADDR_BLOCK1, 32'h72612cb5);
+
+      write_word(ADDR_CONFIG, 32'h0);
+      write_word(ADDR_CTRL, 32'h2);
+
+      wait_ready();
+
+      read_word(ADDR_RESULT0);
+      res0 = read_data;
+      read_word(ADDR_RESULT1);
+      res1 = read_data;
+
+      if ({res0, res1} == 64'h4142434445464748)
+        begin
+          $display("*** Correct result received.");
+        end
+      else
+        begin
+          $display("*** Incorrect result received. Expexted 64'h4142434445464748, got 0x%016x", {res0, res1});
+          error_ctr = error_ctr + 1;
+        end
+
+      $display("*** TC2 completed.");
+      $display("");
+    end
+  endtask // tc2
 
 
   //----------------------------------------------------------------
@@ -214,6 +383,7 @@ module tb_xtea();
       reset_dut();
 
       tc1();
+      tc2();
 
       display_test_result();
       $display("");
