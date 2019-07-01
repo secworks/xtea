@@ -20,10 +20,16 @@ Feistel rounds.)
 ### Implementation Results
 #### Xilinx Artix-7
 Device: xc7a200t
+
 Package: fbg484
+
 Speed: -3
 
+
 Slice registers: 298
+
 Slice LUTs: 552
+
 Occupied Slices: 181
+
 Clock frequency: 177 MHz
