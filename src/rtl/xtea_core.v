@@ -44,6 +44,7 @@ module xtea_core(
                  input wire           next,
                  output wire          ready,
 
+                 input wire [5 : 0]   rounds,
                  input wire [127 : 0] key,
 
                  input wire [63 : 0]  block,
@@ -124,7 +125,7 @@ module xtea_core(
           v0_reg        <= 32'h0;
           v1_reg        <= 32'h0;
           sum_reg       <= 32'h0;
-          round_ctr_reg <= 6'h0;
+          round_ctr_reg <= NUM_ROUNDS;
           core_ctrl_reg <= CTRL_IDLE;
         end
       else
@@ -319,7 +320,7 @@ module xtea_core(
             else
               update_v0 = 1'h1;
 
-            if (round_ctr_reg == (NUM_ROUNDS - 1))
+            if (round_ctr_reg == (rounds - 1))
               begin
                 ready_new     = 1'h1;
                 ready_we      = 1'h1;

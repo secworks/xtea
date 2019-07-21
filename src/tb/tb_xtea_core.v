@@ -64,6 +64,7 @@ module tb_xtea_core();
   reg           tb_encdec;
   reg           tb_next;
   wire          tb_ready;
+  reg [5 : 0]   tb_rounds;
   reg [127 : 0] tb_key;
   reg [63 : 0]  tb_block;
   wire [63 : 0] tb_result;
@@ -79,6 +80,7 @@ module tb_xtea_core();
                 .encdec(tb_encdec),
                 .next(tb_next),
 
+                .rounds(tb_rounds),
                 .key(tb_key),
 
                 .block(tb_block),
@@ -229,6 +231,7 @@ module tb_xtea_core();
       tb_reset_n = 1;
       tb_encdec  = 0;
       tb_next    = 0;
+      tb_rounds  = 6'h20;
       tb_key     = 128'h0;
       tb_block   = 64'h0;
     end
