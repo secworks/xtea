@@ -78,7 +78,7 @@ clean:
 
 
 help:
-	@echo "Build system for simulation of AES Verilog core"
+	@echo "Build system for simulation of the XTEA core"
 	@echo ""
 	@echo "Supported targets:"
 	@echo "------------------"
