@@ -1,0 +1,44 @@
+CAPI=2:
+
+name : secworks:crypto:xtea:0
+
+filesets:
+  rtl:
+    files:
+      - src/rtl/xtea.v
+      - src/rtl/xtea_core.v
+    file_type : verilogSource
+
+  tb:
+    files:
+      - src/tb/tb_xtea.v
+      - src/tb/tb_xtea_core.v
+    file_type : verilogSource
+
+  openlane: {files : [data/sky130.tcl : {file_type : tclSource}]}
+
+targets:
+  default:
+    filesets: [rtl]
+
+  lint:
+    default_tool : verilator
+    filesets : [rtl]
+    tools:
+      verilator:
+        mode : lint-only
+    toplevel : xtea
+
+  sky130:
+    default_tool: openlane
+    filesets: [rtl, openlane]
+    toplevel: xtea
+
+  tb_xtea: &tb
+    default_tool: icarus
+    filesets: [rtl, tb]
+    toplevel : tb_xtea
+
+  tb_xtea_core:
+    <<: *tb
+    toplevel : tb_xtea_core
