@@ -33,35 +33,35 @@ Create and enter a new workspace
 mkdir workspace && cd workspace
 ~~~
 
-Register aes as a library in the workspace
+Register xtea as a library in the workspace
 ~~~
-fusesoc library add aes /path/to/aes
+fusesoc library add xtea /path/to/xtea
 ~~~
 
 ...if repo is available locally or...
 ...to get the upstream repo
 ~~~
-fusesoc library add aes https://github.com/secworks/aes
+fusesoc library add xtea https://github.com/secworks/xtea
 ~~~
 
 To run lint
 ~~~
-fusesoc run --target=lint secworks:crypto:aes
+fusesoc run --target=lint secworks:crypto:xtea
 ~~~
 
-Run tb_aes testbench
+Run tb_xtea testbench
 ~~~
-fusesoc run --target=tb_aes secworks:crypto:aes
+fusesoc run --target=tb_xtea secworks:crypto:xtea
 ~~~
 
 Run with modelsim instead of default tool (icarus)
 ~~~
-fusesoc run --target=tb_aes --tool=modelsim secworks:crypto:aes
+fusesoc run --target=tb_xtea --tool=modelsim secworks:crypto:xtea
 ~~~
 
 List all targets
 ~~~
-fusesoc core show secworks:crypto:aes
+fusesoc core show secworks:crypto:xtea
 ~~~
 
 
